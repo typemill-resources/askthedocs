@@ -1,0 +1,15 @@
+<div class="atd-widget"
+     id="atd-widget"
+     data-endpoint="{{ base_url() }}/api/v1/askthedocs/ask">
+  <h3 class="atd-title">{{ widget_title }}</h3>
+  <div class="atd-messages" id="atd-messages" aria-live="polite" role="log"></div>
+  <form class="atd-form" id="atd-form" novalidate>
+    <label for="atd-input" class="atd-sr-only">{{ widget_title }}</label>
+    <textarea id="atd-input"
+              placeholder="Ask a question…"
+              rows="2"
+              maxlength="500"
+              aria-label="Type your question"></textarea>
+    <button type="submit" id="atd-submit">Ask</button>
+  </form>
+</div>

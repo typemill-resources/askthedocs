@@ -1,0 +1,63 @@
+<style>
+#atd-admin { max-width: 960px; }
+.atd-admin-section { margin-bottom: 2rem; padding: 1.5rem; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; }
+.atd-admin-section h2 { margin: 0 0 1rem; font-size: 1.15rem; border: none; padding: 0; }
+.atd-status-grid { display: flex; gap: 2.5rem; margin-bottom: 1.25rem; }
+.atd-status-grid div { font-size: 0.95rem; }
+.atd-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.atd-btn { padding: 0.45rem 1.1rem; background: #0070f3; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9rem; line-height: 1.4; }
+.atd-btn:disabled { opacity: 0.55; cursor: default; }
+.atd-btn-sm { padding: 0.3rem 0.65rem; font-size: 0.78rem; }
+.atd-btn-secondary { background: #64748b; }
+.atd-action-msg { font-size: 0.85rem; }
+.atd-action-msg.ok { color: #16a34a; }
+.atd-action-msg.err { color: #dc2626; }
+#atd-table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-size: 0.85rem; }
+#atd-table th { text-align: left; padding: 0.5rem 0.6rem; background: #f1f5f9; border-bottom: 2px solid #e2e8f0; font-weight: 600; }
+#atd-table td { padding: 0.45rem 0.6rem; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
+#atd-table tr:last-child td { border-bottom: none; }
+.atd-summary-ta { width: 100%; padding: 0.3rem 0.4rem; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 0.82rem; font-family: inherit; resize: vertical; box-sizing: border-box; }
+.atd-row-actions { display: flex; flex-direction: column; gap: 0.4rem; min-width: 100px; }
+.atd-row-msg { font-size: 0.78rem; min-height: 1.1em; }
+</style>
+
+<div id="atd-admin" data-base="{{ base_url() }}">
+
+  <section class="atd-admin-section">
+    <h2>Index Status</h2>
+    <div class="atd-status-grid">
+      <div><strong>Last built:</strong><br><span id="atd-built">—</span></div>
+      <div><strong>Pages indexed:</strong><br><span id="atd-count">—</span></div>
+    </div>
+    <div class="atd-actions">
+      <button id="atd-reindex-btn" class="atd-btn">Rebuild Index</button>
+      <span id="atd-reindex-msg" class="atd-action-msg"></span>
+    </div>
+  </section>
+
+  <section class="atd-admin-section">
+    <h2>Page Summaries</h2>
+    <p style="margin: 0 0 1rem; font-size: 0.9rem; color: #475569;">
+      These summaries help the AI understand which pages to navigate to. They are seeded from page meta descriptions and can be refined with AI generation or manual edits.
+    </p>
+    <p id="atd-loading" style="color: #64748b;">Loading summaries…</p>
+    <table id="atd-table" hidden>
+      <colgroup>
+        <col style="width:20%">
+        <col style="width:16%">
+        <col style="width:44%">
+        <col style="width:20%">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>URL</th>
+          <th>Title</th>
+          <th>Summary</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="atd-tbody"></tbody>
+    </table>
+  </section>
+
+</div>

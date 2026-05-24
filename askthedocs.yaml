@@ -1,0 +1,41 @@
+name: Ask the Docs
+version: 1.0.0
+description: AI Q&A plugin for Typemill documentation using agentic content traversal.
+author: Typemill
+homepage: https://typemill.net
+license: MIT
+
+settings:
+  max_steps: 6
+  max_pages: 3
+  widget_title: 'Ask the Docs'
+  auto_reindex: true
+  extra_instructions: ''
+
+forms:
+  fields:
+
+    widget_title:
+      type: text
+      label: Widget Title
+      description: 'Heading shown inside the chat widget.'
+
+    max_steps:
+      type: number
+      label: Max Agent Steps
+      description: 'Maximum loop iterations before the AI is forced to answer (recommended: 4–8).'
+
+    max_pages:
+      type: number
+      label: Max Pages Fetched
+      description: 'Maximum number of full pages the AI may read per question (recommended: 2–4).'
+
+    extra_instructions:
+      type: textarea
+      label: Additional Agent Instructions
+      description: 'Optional extra instructions appended to the built-in system prompt. Use this to add context about your site, restrict topics, or adjust tone. Do not try to override the JSON output format rules here.'
+
+    auto_reindex:
+      type: checkbox
+      label: Auto-reindex on content changes
+      description: 'Rebuild the summary index whenever a page is published or deleted.'
