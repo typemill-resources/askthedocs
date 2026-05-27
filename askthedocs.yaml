@@ -3,7 +3,7 @@ version: 1.0.0
 description: Simple ai chatbot plugin to answer questions about your Typemill website. Integrate the chatbot to the frontend with the [:askthedocs:] shortcode.
 author: Typemill
 homepage: https://typemill.net
-license: MIT
+license: MAKER
 
 settings:
   max_steps: 6

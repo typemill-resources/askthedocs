@@ -7,6 +7,12 @@ use Plugins\askthedocs\AskTheDocsController;
 
 class askthedocs extends Plugin
 {
+
+    public static function setPremiumLicence()
+    {
+        return 'MAKER';
+    }
+    
     public static function getSubscribedEvents()
     {
         return [
