@@ -1,6 +1,6 @@
 name: Ask the Docs
 version: 1.0.0
-description: AI Q&A plugin for Typemill documentation using agentic content traversal.
+description: Simple ai chatbot plugin to answer questions about your Typemill website. Integrate the chatbot to the frontend with the [:askthedocs:] shortcode.
 author: Typemill
 homepage: https://typemill.net
 license: MIT
@@ -9,8 +9,27 @@ settings:
   max_steps: 6
   max_pages: 3
   widget_title: 'Ask the Docs'
+  widget_button_label: 'Ask'
+  widget_placeholder: 'Ask a question…'
+  widget_button_color: '#333333'
+  widget_button_text_color: '#ffffff'
+  widget_bg_color: '#f5f5f5'
+  widget_text_color: '#222222'
   auto_reindex: true
   extra_instructions: ''
+  widget_explanation: 'Ask a question about the documentation and get an instant answer.'
+  log_questions: true
+  log_full_sessions: true
+  log_retention_days: 30
+  privacy_check: false
+  privacy_label: 'I agree to the privacy policy and the processing of my data by the AI service.'
+  privacy_error: 'You have to agree to the privacy statement before you can use the chatbot.'
+  max_questions_per_session: 3
+  max_questions_per_day: 100
+  max_tokens_per_day: 50000
+  max_questions_per_minute: 5
+  max_lines_per_question: 5
+  limit_message: 'You have reached the question limit for this session. Please refresh the page to start a new session.'
 
 forms:
   fields:
@@ -19,6 +38,71 @@ forms:
       type: text
       label: Widget Title
       description: 'Heading shown inside the chat widget.'
+
+    widget_button_label:
+      type: text
+      label: Button Label
+      description: 'Text displayed on the submit button.'
+
+    widget_placeholder:
+      type: text
+      label: Input Placeholder
+      description: 'Placeholder text for the question input field.'
+
+    widget_button_color:
+      type: color
+      label: Button Color
+      description: 'Background color of the submit button.'
+
+    widget_button_text_color:
+      type: color
+      label: Button Text Color
+      description: 'Text color of the submit button.'
+
+    widget_bg_color:
+      type: color
+      label: Widget Background Color
+      description: 'Background color of the widget container.'
+
+    widget_text_color:
+      type: color
+      label: Widget Text Color
+      description: 'Text color used inside the widget.'
+
+    widget_explanation:
+      type: textarea
+      label: Widget Explanation
+      description: 'Short introductory text shown below the widget title before the first question.'
+
+    max_questions_per_session:
+      type: number
+      label: Max Questions per Visitor (per day)
+      description: 'Maximum number of questions a single visitor (by IP address) can ask per day.'
+
+    max_questions_per_day:
+      type: number
+      label: Max Questions per Day (global)
+      description: 'Maximum total number of questions allowed across all visitors per day.'
+
+    max_tokens_per_day:
+      type: number
+      label: Max Tokens per Day (global)
+      description: 'Approximate daily token budget across all visitors (1 token ≈ 4 characters).'
+
+    max_questions_per_minute:
+      type: number
+      label: Max Questions per Minute (per visitor)
+      description: 'Burst-rate limit per visitor to prevent spam. Set 0 to disable.'
+
+    max_lines_per_question:
+      type: number
+      label: Max Lines per Question
+      description: 'Reject questions with more newlines than this to prevent fake multi-turn prompts.'
+
+    limit_message:
+      type: text
+      label: Limit Reached Message
+      description: 'Message shown when a visitor or the daily budget limit has been reached.'
 
     max_steps:
       type: number
@@ -35,7 +119,27 @@ forms:
       label: Additional Agent Instructions
       description: 'Optional extra instructions appended to the built-in system prompt. Use this to add context about your site, restrict topics, or adjust tone. Do not try to override the JSON output format rules here.'
 
+    log_full_sessions:
+      type: checkbox
+      label: Log Full Sessions
+      checkboxlabel: 'Store detailed session logs (prompts, AI responses, navigation steps) for debugging. Disable to save disk space.'
+
+    privacy_check:
+      type: checkbox
+      label: Privacy Consent Checkbox
+      checkboxlabel: 'Show a privacy consent checkbox in the frontend widget. Visitors must agree before using the chatbot.'
+
+    privacy_label:
+      type: text
+      label: Privacy Checkbox Label
+      description: 'Label shown next to the consent checkbox. You can use simple HTML like <a href="/privacy">links</a>.'
+
+    privacy_error:
+      type: text
+      label: Privacy Error Message
+      description: 'Message shown when a visitor tries to submit a question without checking the privacy box.'
+
     auto_reindex:
       type: checkbox
       label: Auto-reindex on content changes
-      description: 'Rebuild the summary index whenever a page is published or deleted.'
+      checkboxlabel: 'Rebuild the summary index whenever a page is published or deleted.'

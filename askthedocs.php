@@ -71,6 +71,56 @@ class askthedocs extends Plugin
                 'privilege'  => 'view',
             ],
 
+            // Admin — list logged questions
+            [
+                'httpMethod' => 'get',
+                'route'      => '/api/v1/askthedocs/questions',
+                'name'       => 'askthedocs.questions',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:getQuestions',
+                'resource'   => 'system',
+                'privilege'  => 'view',
+            ],
+
+            // Admin — clear question log
+            [
+                'httpMethod' => 'post',
+                'route'      => '/api/v1/askthedocs/questions/clear',
+                'name'       => 'askthedocs.questions.clear',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:clearQuestions',
+                'resource'   => 'system',
+                'privilege'  => 'view',
+            ],
+
+            // Admin — list session logs
+            [
+                'httpMethod' => 'get',
+                'route'      => '/api/v1/askthedocs/logs',
+                'name'       => 'askthedocs.logs',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:listSessionLogs',
+                'resource'   => 'system',
+                'privilege'  => 'view',
+            ],
+
+            // Admin — delete session log(s)
+            [
+                'httpMethod' => 'post',
+                'route'      => '/api/v1/askthedocs/logs/delete',
+                'name'       => 'askthedocs.logs.delete',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:deleteSessionLog',
+                'resource'   => 'system',
+                'privilege'  => 'view',
+            ],
+
+            // Admin — fetch single session log content
+            [
+                'httpMethod' => 'post',
+                'route'      => '/api/v1/askthedocs/log',
+                'name'       => 'askthedocs.log',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:getSessionLog',
+                'resource'   => 'system',
+                'privilege'  => 'view',
+            ],
+
             // Admin page (system UI shell)
             [
                 'httpMethod' => 'get',
@@ -89,7 +139,7 @@ class askthedocs extends Plugin
 
         // Register this shortcode so it appears in the editor shortcode list
         if (is_array($shortcodeArray) && $shortcodeArray['name'] === 'registershortcode') {
-            $shortcodeArray['data']['askthedocs'] = [];
+            $shortcodeArray['data']['askthedocs'] = new \stdClass();
             $shortcode->setData($shortcodeArray);
             return;
         }
@@ -104,7 +154,17 @@ class askthedocs extends Plugin
             $loader->addPath(__DIR__ . '/templates');
 
             $html = $twig->fetch('/widget.twig', [
-                'widget_title' => $settings['widget_title'] ?? 'Ask the Docs',
+                'widget_title'             => $settings['widget_title']             ?? 'Ask the Docs',
+                'widget_button_label'      => $settings['widget_button_label']      ?? 'Ask',
+                'widget_placeholder'       => $settings['widget_placeholder']       ?? 'Ask a question…',
+                'widget_button_color'      => $settings['widget_button_color']      ?? '#333333',
+                'widget_button_text_color' => $settings['widget_button_text_color'] ?? '#ffffff',
+                'widget_bg_color'          => $settings['widget_bg_color']          ?? '#f5f5f5',
+                'widget_text_color'        => $settings['widget_text_color']        ?? '#222222',
+                'widget_explanation'       => $settings['widget_explanation']       ?? 'Ask a question about the documentation and get an instant answer.',
+                'privacy_check'            => !empty($settings['privacy_check']),
+                'privacy_label'            => $settings['privacy_label']            ?? 'I agree to the privacy policy and the processing of my data by the AI service.',
+                'privacy_error'            => $settings['privacy_error']            ?? 'You have to agree to the privacy statement before you can use the chatbot.',
             ]);
 
             $shortcode->setData($html);

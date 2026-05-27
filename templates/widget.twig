@@ -1,15 +1,35 @@
 <div class="atd-widget"
      id="atd-widget"
-     data-endpoint="{{ base_url() }}/api/v1/askthedocs/ask">
-  <h3 class="atd-title">{{ widget_title }}</h3>
+     data-endpoint="{{ base_url() }}/api/v1/askthedocs/ask"
+     style="background-color: {{ widget_bg_color }}; color: {{ widget_text_color }};">
+  <h3 class="atd-title" style="color: {{ widget_text_color }};">{{ widget_title }}</h3>
+  <p class="atd-explanation" id="atd-explanation">{{ widget_explanation }}</p>
   <div class="atd-messages" id="atd-messages" aria-live="polite" role="log"></div>
+  <div class="atd-separator"></div>
   <form class="atd-form" id="atd-form" novalidate>
     <label for="atd-input" class="atd-sr-only">{{ widget_title }}</label>
-    <textarea id="atd-input"
-              placeholder="Ask a question…"
-              rows="2"
-              maxlength="500"
-              aria-label="Type your question"></textarea>
-    <button type="submit" id="atd-submit">Ask</button>
+    <div class="atd-input-wrap">
+      <textarea id="atd-input"
+                placeholder="{{ widget_placeholder }}"
+                rows="2"
+                maxlength="500"
+                aria-label="Type your question"></textarea>
+    </div>
+    <button type="submit"
+            id="atd-submit"
+            style="background-color: {{ widget_button_color }}; color: {{ widget_button_text_color }};">
+      {{ widget_button_label }}
+    </button>
   </form>
+{% if privacy_check %}
+  <div class="atd-privacy" id="atd-privacy">
+    <label class="atd-privacy-label">
+      <input type="checkbox" id="atd-privacy-checkbox">
+      <span>{{ privacy_label|raw }}</span>
+    </label>
+    <div class="atd-privacy-error" id="atd-privacy-error" style="display: none;">
+      {{ privacy_error|raw }}
+    </div>
+  </div>
+{% endif %}
 </div>
