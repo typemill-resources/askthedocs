@@ -1,8 +1,8 @@
 name: Ask the Docs
-version: 1.0.0
+version: 1.0.1
 description: Simple ai chatbot plugin to answer questions about your Typemill website. Integrate the chatbot to the frontend with the [:askthedocs:] shortcode.
-author: Typemill
-homepage: https://typemill.net
+author: Trendschau
+homepage: https://trendschau.net
 license: MAKER
 
 settings:
@@ -34,112 +34,127 @@ settings:
 forms:
   fields:
 
-    widget_title:
-      type: text
-      label: Widget Title
-      description: 'Heading shown inside the chat widget.'
+    appearance:
+      type: fieldset
+      legend: Chatbot appearance
+      fields:
 
-    widget_button_label:
-      type: text
-      label: Button Label
-      description: 'Text displayed on the submit button.'
+        widget_title:
+          type: text
+          label: Widget Title
+          description: 'Heading shown inside the chat widget.'
 
-    widget_placeholder:
-      type: text
-      label: Input Placeholder
-      description: 'Placeholder text for the question input field.'
+        widget_button_label:
+          type: text
+          label: Button Label
+          description: 'Text displayed on the submit button.'
 
-    widget_button_color:
-      type: color
-      label: Button Color
-      description: 'Background color of the submit button.'
+        widget_placeholder:
+          type: text
+          label: Input Placeholder
+          description: 'Placeholder text for the question input field.'
 
-    widget_button_text_color:
-      type: color
-      label: Button Text Color
-      description: 'Text color of the submit button.'
+        widget_button_color:
+          type: color
+          label: Button Color
+          description: 'Background color of the submit button.'
 
-    widget_bg_color:
-      type: color
-      label: Widget Background Color
-      description: 'Background color of the widget container.'
+        widget_button_text_color:
+          type: color
+          label: Button Text Color
+          description: 'Text color of the submit button.'
 
-    widget_text_color:
-      type: color
-      label: Widget Text Color
-      description: 'Text color used inside the widget.'
+        widget_bg_color:
+          type: color
+          label: Widget Background Color
+          description: 'Background color of the widget container.'
 
-    widget_explanation:
-      type: textarea
-      label: Widget Explanation
-      description: 'Short introductory text shown below the widget title before the first question.'
+        widget_text_color:
+          type: color
+          label: Widget Text Color
+          description: 'Text color used inside the widget.'
 
-    max_questions_per_session:
-      type: number
-      label: Max Questions per Visitor (per day)
-      description: 'Maximum number of questions a single visitor (by IP address) can ask per day.'
+        widget_explanation:
+          type: textarea
+          label: Widget Explanation
+          description: 'Short introductory text shown below the widget title before the first question.'
 
-    max_questions_per_day:
-      type: number
-      label: Max Questions per Day (global)
-      description: 'Maximum total number of questions allowed across all visitors per day.'
+    limits:
+      type: fieldset
+      legend: Instructions & Limits
+      fields:
 
-    max_tokens_per_day:
-      type: number
-      label: Max Tokens per Day (global)
-      description: 'Approximate daily token budget across all visitors (1 token ≈ 4 characters).'
+        extra_instructions:
+          type: textarea
+          label: Additional Agent Instructions
+          description: 'Optional extra instructions appended to the built-in system prompt. Use this to add context about your site, restrict topics, or adjust tone. Do not try to override the JSON output format rules here.'
 
-    max_questions_per_minute:
-      type: number
-      label: Max Questions per Minute (per visitor)
-      description: 'Burst-rate limit per visitor to prevent spam. Set 0 to disable.'
+        max_questions_per_session:
+          type: number
+          label: Max Questions per Visitor (per day)
+          description: 'Maximum number of questions a single visitor (by IP address) can ask per day.'
 
-    max_lines_per_question:
-      type: number
-      label: Max Lines per Question
-      description: 'Reject questions with more newlines than this to prevent fake multi-turn prompts.'
+        max_questions_per_day:
+          type: number
+          label: Max Questions per Day (global)
+          description: 'Maximum total number of questions allowed across all visitors per day.'
 
-    limit_message:
-      type: text
-      label: Limit Reached Message
-      description: 'Message shown when a visitor or the daily budget limit has been reached.'
+        max_tokens_per_day:
+          type: number
+          label: Max Tokens per Day (global)
+          description: 'Approximate daily token budget across all visitors (1 token ≈ 4 characters).'
 
-    max_steps:
-      type: number
-      label: Max Agent Steps
-      description: 'Maximum loop iterations before the AI is forced to answer (recommended: 4–8).'
+        max_questions_per_minute:
+          type: number
+          label: Max Questions per Minute (per visitor)
+          description: 'Burst-rate limit per visitor to prevent spam. Set 0 to disable.'
 
-    max_pages:
-      type: number
-      label: Max Pages Fetched
-      description: 'Maximum number of full pages the AI may read per question (recommended: 2–4).'
+        max_lines_per_question:
+          type: number
+          label: Max Lines per Question
+          description: 'Reject questions with more newlines than this to prevent fake multi-turn prompts.'
 
-    extra_instructions:
-      type: textarea
-      label: Additional Agent Instructions
-      description: 'Optional extra instructions appended to the built-in system prompt. Use this to add context about your site, restrict topics, or adjust tone. Do not try to override the JSON output format rules here.'
+        limit_message:
+          type: text
+          label: Limit Reached Message
+          description: 'Message shown when a visitor or the daily budget limit has been reached.'
 
-    log_full_sessions:
-      type: checkbox
-      label: Log Full Sessions
-      checkboxlabel: 'Store detailed session logs (prompts, AI responses, navigation steps) for debugging. Disable to save disk space.'
+        max_steps:
+          type: number
+          label: Max Agent Steps
+          description: 'Maximum loop iterations before the AI is forced to answer (recommended: 4–8).'
 
-    privacy_check:
-      type: checkbox
-      label: Privacy Consent Checkbox
-      checkboxlabel: 'Show a privacy consent checkbox in the frontend widget. Visitors must agree before using the chatbot.'
+        max_pages:
+          type: number
+          label: Max Pages Fetched
+          description: 'Maximum number of full pages the AI may read per question (recommended: 2–4).'
 
-    privacy_label:
-      type: text
-      label: Privacy Checkbox Label
-      description: 'Label shown next to the consent checkbox. You can use simple HTML like <a href="/privacy">links</a>.'
+    logs:
+      type: fieldset
+      legend: Logs & Privacy
+      fields:
 
-    privacy_error:
-      type: text
-      label: Privacy Error Message
-      description: 'Message shown when a visitor tries to submit a question without checking the privacy box.'
+        log_full_sessions:
+          type: checkbox
+          label: Log Full Sessions
+          checkboxlabel: 'Store detailed session logs (prompts, AI responses, navigation steps) for debugging. Disable to save disk space.'
 
-    auto_reindex:
-      type: checkbox
-      label: Auto-reindex on content changes
-      checkboxlabel: 'Rebuild the summary index whenever a page is published or deleted.'
+        privacy_check:
+          type: checkbox
+          label: Privacy Consent Checkbox
+          checkboxlabel: 'Show a privacy consent checkbox in the frontend widget. Visitors must agree before using the chatbot.'
+
+        privacy_label:
+          type: text
+          label: Privacy Checkbox Label
+          description: 'Label shown next to the consent checkbox. You can use simple HTML like <a href="/privacy">links</a>.'
+
+        privacy_error:
+          type: text
+          label: Privacy Error Message
+          description: 'Message shown when a visitor tries to submit a question without checking the privacy box.'
+
+        auto_reindex:
+          type: checkbox
+          label: Auto-reindex on content changes
+          checkboxlabel: 'Rebuild the summary index whenever a page is published or deleted.'
