@@ -1,5 +1,5 @@
 name: Ask the Docs
-version: 1.0.1
+version: 1.0.3
 description: Simple ai chatbot plugin to answer questions about your Typemill website. Integrate the chatbot to the frontend with the [:askthedocs:] shortcode.
 author: Trendschau
 homepage: https://trendschau.net
@@ -129,6 +129,11 @@ forms:
           label: Max Pages Fetched
           description: 'Maximum number of full pages the AI may read per question (recommended: 2–4).'
 
+        auto_reindex:
+          type: checkbox
+          label: Auto-reindex on content changes
+          checkboxlabel: 'Rebuild the summary index whenever a page is published or deleted.'
+
     logs:
       type: fieldset
       legend: Logs & Privacy
@@ -147,14 +152,9 @@ forms:
         privacy_label:
           type: text
           label: Privacy Checkbox Label
-          description: 'Label shown next to the consent checkbox. You can use simple HTML like <a href="/privacy">links</a>.'
+          description: 'Label shown next to the consent checkbox. Link to your privacy statement with a markdown link.'
 
         privacy_error:
           type: text
           label: Privacy Error Message
           description: 'Message shown when a visitor tries to submit a question without checking the privacy box.'
-
-        auto_reindex:
-          type: checkbox
-          label: Auto-reindex on content changes
-          checkboxlabel: 'Rebuild the summary index whenever a page is published or deleted.'

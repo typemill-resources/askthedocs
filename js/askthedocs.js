@@ -243,6 +243,10 @@
     widget = document.getElementById('atd-widget');
     if (!widget) return;
 
+    document.getElementById('atd-input').addEventListener('input', function () {
+      document.getElementById('atd-char-count').textContent = this.value.length + ' / 500';
+    });
+
     endpoint       = widget.dataset.endpoint;
     messagesEl     = document.getElementById('atd-messages');
     explanationEl  = document.getElementById('atd-explanation');

@@ -12,7 +12,7 @@ class askthedocs extends Plugin
     {
         return 'MAKER';
     }
-    
+
     public static function getSubscribedEvents()
     {
         return [
@@ -151,37 +151,46 @@ class askthedocs extends Plugin
         }
 
         // Render the [askthedocs] widget
-        if (is_array($shortcodeArray) && $shortcodeArray['name'] === 'askthedocs') {
-            $shortcode->stopPropagation();
+        if (is_array($shortcodeArray) && $shortcodeArray['name'] === 'askthedocs')
+        {
+            if($this->adminroute)
+            {
+                $html = '<p style="color:red">The askthedocs-chatbot is integrated in the frontend page</p>';
+                $shortcode->setData($html);
+            }
+            else
+            {
+                $shortcode->stopPropagation();
 
-            $settings = $this->getPluginSettings();
-            $twig     = $this->getTwig();
-            $loader   = $twig->getLoader();
-            $loader->addPath(__DIR__ . '/templates');
+                $settings = $this->getPluginSettings();
+                $twig     = $this->getTwig();
+                $loader   = $twig->getLoader();
+                $loader->addPath(__DIR__ . '/templates');
 
-            $html = $twig->fetch('/widget.twig', [
-                'widget_title'             => $settings['widget_title']             ?? 'Ask the Docs',
-                'widget_button_label'      => $settings['widget_button_label']      ?? 'Ask',
-                'widget_placeholder'       => $settings['widget_placeholder']       ?? 'Ask a question…',
-                'widget_button_color'      => $settings['widget_button_color']      ?? '#333333',
-                'widget_button_text_color' => $settings['widget_button_text_color'] ?? '#ffffff',
-                'widget_bg_color'          => $settings['widget_bg_color']          ?? '#f5f5f5',
-                'widget_text_color'        => $settings['widget_text_color']        ?? '#222222',
-                'widget_explanation'       => $settings['widget_explanation']       ?? 'Ask a question about the documentation and get an instant answer.',
-                'privacy_check'            => !empty($settings['privacy_check']),
-                'privacy_label'            => $settings['privacy_label']            ?? 'I agree to the privacy policy and the processing of my data by the AI service.',
-                'privacy_error'            => $settings['privacy_error']            ?? 'You have to agree to the privacy statement before you can use the chatbot.',
-            ]);
+                $html = $twig->fetch('/widget.twig', [
+                    'widget_title'             => $settings['widget_title']             ?? 'Ask the Docs',
+                    'widget_button_label'      => $settings['widget_button_label']      ?? 'Ask',
+                    'widget_placeholder'       => $settings['widget_placeholder']       ?? 'Ask a question…',
+                    'widget_button_color'      => $settings['widget_button_color']      ?? '#333333',
+                    'widget_button_text_color' => $settings['widget_button_text_color'] ?? '#ffffff',
+                    'widget_bg_color'          => $settings['widget_bg_color']          ?? '#f5f5f5',
+                    'widget_text_color'        => $settings['widget_text_color']        ?? '#222222',
+                    'widget_explanation'       => $settings['widget_explanation']       ?? 'Ask a question about the documentation and get an instant answer.',
+                    'privacy_check'            => !empty($settings['privacy_check']),
+                    'privacy_label'            => $settings['privacy_label']            ?? 'I agree to the privacy policy and the processing of my data by the AI service.',
+                    'privacy_error'            => $settings['privacy_error']            ?? 'You have to agree to the privacy statement before you can use the chatbot.',
+                ]);
 
-            $shortcode->setData($html);
+                $shortcode->setData($html);
+            }
         }
     }
 
     public function onTwigLoaded()
     {
         if (!$this->adminroute) {
-            $this->addCSS('/askthedocs/css/askthedocs.css');
-            $this->addJS('/askthedocs/js/askthedocs.js');
+            $this->addCSS('/askthedocs/css/askthedocs.css?20200530');
+            $this->addJS('/askthedocs/js/askthedocs.js?2020530');
         }
     }
 
@@ -206,7 +215,7 @@ class askthedocs extends Plugin
 
         if (trim($this->route, '/') === 'tm/askthedocs') {
             $navi['AskTheDocs']['active'] = true;
-            $this->addJS('/askthedocs/js/admin.js');
+            $this->addJS('/askthedocs/js/admin.js?20280530');
         }
 
         $navidata->setData($navi);

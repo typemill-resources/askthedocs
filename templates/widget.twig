@@ -2,7 +2,15 @@
      id="atd-widget"
      data-endpoint="{{ base_url() }}/api/v1/askthedocs/ask"
      style="background-color: {{ widget_bg_color }}; color: {{ widget_text_color }};">
-  <h3 class="atd-title" style="color: {{ widget_text_color }};">{{ widget_title }}</h3>
+  <div class="atd-header">
+    <div class="atd-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12c0 1.6.376 3.112 1.043 4.453L2 22l5.547-1.043A9.959 9.959 0 0 0 12 22z"/>
+        <path d="M12 8v4M12 16h.01"/>
+      </svg>
+    </div>
+    <h3 class="atd-title" style="color: {{ widget_text_color }};">{{ widget_title }}</h3>
+  </div>
   <p class="atd-explanation" id="atd-explanation">{{ widget_explanation }}</p>
   <div class="atd-messages" id="atd-messages" aria-live="polite" role="log"></div>
   <div class="atd-separator"></div>
@@ -21,14 +29,17 @@
       {{ widget_button_label }}
     </button>
   </form>
+  <div class="atd-char-count"><span id="atd-char-count">0 / 500</span></div>
 {% if privacy_check %}
   <div class="atd-privacy" id="atd-privacy">
     <label class="atd-privacy-label">
       <input type="checkbox" id="atd-privacy-checkbox">
-      <span>{{ privacy_label|raw }}</span>
+      <div class="atd-privacy-text">
+        {{ markdown(privacy_label)|raw }}
+      </div>
     </label>
     <div class="atd-privacy-error" id="atd-privacy-error" style="display: none;">
-      {{ privacy_error|raw }}
+      {{ privacy_error }}
     </div>
   </div>
 {% endif %}
