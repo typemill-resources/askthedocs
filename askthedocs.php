@@ -37,6 +37,22 @@ class askthedocs extends Plugin
                 'class'      => 'Plugins\askthedocs\AskTheDocsController:ask',
             ],
 
+            // Public — documentation index (header auth)
+            [
+                'httpMethod' => 'get',
+                'route'      => '/api/v1/askthedocs/index',
+                'name'       => 'askthedocs.index',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:index',
+            ],
+
+            // Public — single page markdown (header auth)
+            [
+                'httpMethod' => 'get',
+                'route'      => '/api/v1/askthedocs/page',
+                'name'       => 'askthedocs.page',
+                'class'      => 'Plugins\askthedocs\AskTheDocsController:page',
+            ],
+
             // Admin — rebuild summary index
             [
                 'httpMethod' => 'post',

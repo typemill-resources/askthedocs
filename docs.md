@@ -48,6 +48,8 @@ It integrates with Typemill via:
 | Method | Route | Controller method | Auth |
 |--------|-------|-------------------|------|
 | `POST` | `/api/v1/askthedocs/ask` | `ask` | **Public** |
+| `GET`  | `/api/v1/askthedocs/index` | `index` | Public (header auth) |
+| `GET`  | `/api/v1/askthedocs/page` | `page` | Public (header auth) |
 | `POST` | `/api/v1/askthedocs/reindex` | `reindex` | Admin (system/view) |
 | `GET`  | `/api/v1/askthedocs/status` | `status` | Admin |
 | `POST` | `/api/v1/askthedocs/summary` | `updateSummary` | Admin |
@@ -58,6 +60,91 @@ It integrates with Typemill via:
 | `POST` | `/api/v1/askthedocs/logs/delete` | `deleteSessionLog` | Admin |
 | `POST` | `/api/v1/askthedocs/log` | `getSessionLog` | Admin |
 | `GET`  | `/tm/askthedocs` | System blank page | Admin |
+
+---
+
+## Public API
+
+Two read-only endpoints let remote Typemill instances query the documentation tree and raw page content. They are **opt-in** via plugin settings and protected by a lightweight header auth.
+
+### Settings
+
+| Setting | Type | Default | Purpose |
+|---------|------|---------|---------|
+| `enable_public_index` | checkbox | false | Expose `/api/v1/askthedocs/index` |
+| `enable_public_page` | checkbox | false | Expose `/api/v1/askthedocs/page` |
+
+### Authentication
+
+Both endpoints require the header:
+
+```
+X-AskTheDocs-Auth: <md5_hash_of_public_key.pem>
+```
+
+The server reads its own `/settings/public_key.pem`, computes the MD5 hash, and compares it with the header value. Missing, malformed, or mismatched headers return `403`.
+
+### `GET /api/v1/askthedocs/index`
+
+Returns the full documentation tree plus a flat page map.
+
+**Query params:** none
+
+**Response:**
+```json
+{
+  "navigation": [
+    {
+      "type": "folder",
+      "title": "Getting Started",
+      "summary": "...",
+      "path": "/getting-started",
+      "children": [
+        { "type": "file", "title": "Installation", "summary": "...", "path": "/getting-started/installation" }
+      ]
+    }
+  ],
+  "pages": {
+    "/getting-started/installation": { "title": "Installation", "summary": "..." }
+  },
+  "built": "2026-06-03T10:00:00+00:00"
+}
+```
+
+- **Navigation** is built from `getFullDraftNavigation()` then filtered to exclude:
+  - `status === 'unpublished'` pages
+  - Restricted pages (`alloweduser` or `allowedrole` set)
+  - **Hidden pages are kept** — they may still be valid documentation
+- The endpoint **never generates or rebuilds summaries**. If `summaries.json` does not exist, it returns `404`.
+- Response includes `Cache-Control: public, max-age=3600`.
+
+### `GET /api/v1/askthedocs/page`
+
+Returns the raw Markdown of a single page.
+
+**Query params:**
+- `path` — required, e.g. `?path=/getting-started/installation`
+
+**Response:**
+```json
+{
+  "path": "/getting-started/installation",
+  "markdown": "# Installation\n\nFirst, download..."
+}
+```
+
+- Invalid paths (`..`, null bytes) return `400`.
+- Missing or empty pages return `404`.
+- Response includes `Cache-Control: public, max-age=3600`.
+
+### Implementation helpers
+
+| Method | Purpose |
+|--------|---------|
+| `checkPublicAuth()` | Validates the `X-AskTheDocs-Auth` header against `md5(public_key.pem)` |
+| `getPublicKeyHash()` | Reads `/settings/public_key.pem` and returns its MD5 hash |
+| `buildPublicIndex()` | Builds the `{navigation, pages, built}` payload from existing summaries |
+| `filterPublishedAndUnrestricted()` | Recursive filter that removes unpublished and restricted nav items while preserving hidden pages |
 
 ---
 
@@ -304,6 +391,9 @@ Edit `getVisitorHash()` in the `AskTheDocsController`. The hash is used for rate
 | "Missing configuration" error | AI adapter not set in system settings | Configure AI adapter + base URL + model + API key |
 | Widget does not appear | Shortcode not inserted, or plugin disabled | Add `[:askthedocs:]` to a page and enable the plugin |
 | "Documentation index is not available" | `summaries.json` missing | Click **Rebuild & Generate** in the admin dashboard |
+| Public `/index` returns 404 | `summaries.json` does not exist | Build the index in the admin dashboard first; the public endpoint never creates it |
+| Public endpoints return 403 | Endpoint not enabled or auth header missing | Enable the checkbox in plugin settings and send `X-AskTheDocs-Auth: <md5(public_key.pem)>` |
+| Public endpoints return 403 with "Unauthorized" | Auth header does not match server's `public_key.pem` | Ensure both instances use the same `public_key.pem` file in `/settings` |
 | Answers are off-topic | Extra instructions too broad | Tighten `extra_instructions` or lower `max_steps` |
 | Disk space growing | Full session logs enabled | Disable `log_full_sessions` or delete `log_*.md` files |
 | Rate limit hit for all visitors | `max_questions_per_day` too low | Raise the global daily limit in plugin settings |

@@ -1,5 +1,5 @@
 name: Ask the Docs
-version: 1.0.3
+version: 1.1.0
 description: Simple ai chatbot plugin to answer questions about your Typemill website. Integrate the chatbot to the frontend with the [:askthedocs:] shortcode.
 author: Trendschau
 homepage: https://trendschau.net
@@ -158,3 +158,19 @@ forms:
           type: text
           label: Privacy Error Message
           description: 'Message shown when a visitor tries to submit a question without checking the privacy box.'
+
+    public_api:
+      type: fieldset
+      legend: Public API
+      fields:
+
+        enable_public_index:
+          type: checkbox
+          label: Enable Public Index Endpoint
+          checkboxlabel: 'Expose /api/v1/askthedocs/index so remote Typemill instances can fetch the documentation tree.'
+
+        enable_public_page:
+          type: checkbox
+          label: Enable Public Page Endpoint
+          checkboxlabel: 'Expose /api/v1/askthedocs/page so remote Typemill instances can fetch raw page Markdown.'
+

@@ -129,6 +129,8 @@ class AskTheDocsController
             return $this->json($response, ['error' => 'Documentation index is not available.'], 500);
         }
 
+        $nav = $this->filterPublishedAndUnrestricted($nav);
+
         $summaries = $this->loadSummaries();
         $rootIndex = [];
 
@@ -175,6 +177,62 @@ class AskTheDocsController
         }
 
         return $this->json($response, $result);
+    }
+
+    public function index(Request $request, Response $response, $args): Response
+    {
+        $pluginSettings = $this->settings['plugins']['askthedocs'] ?? [];
+        if (empty($pluginSettings['enable_public_index'])) {
+            return $this->json($response, ['error' => 'Endpoint disabled.'], 403);
+        }
+
+        if (!$this->checkPublicAuth()) {
+            return $this->json($response, ['error' => 'Unauthorized.'], 403);
+        }
+
+        // Never generate summaries on the public endpoint — only serve existing index
+        $summaries = $this->loadSummaries();
+        unset($summaries['built']);
+        if (empty($summaries)) {
+            return $this->json($response, ['error' => 'Documentation index not found. Please rebuild the index in the admin panel.'], 404);
+        }
+
+        $index = $this->buildPublicIndex();
+
+        $response = $response->withHeader('Cache-Control', 'public, max-age=3600');
+        return $this->json($response, $index);
+    }
+
+    public function page(Request $request, Response $response, $args): Response
+    {
+        $pluginSettings = $this->settings['plugins']['askthedocs'] ?? [];
+        if (empty($pluginSettings['enable_public_page'])) {
+            return $this->json($response, ['error' => 'Endpoint disabled.'], 403);
+        }
+
+        if (!$this->checkPublicAuth()) {
+            return $this->json($response, ['error' => 'Unauthorized.'], 403);
+        }
+
+        $path = trim($request->getQueryParams()['path'] ?? '');
+        if ($path === '') {
+            return $this->json($response, ['error' => 'Path is required.'], 400);
+        }
+
+        if (strpos($path, '..') !== false || strpos($path, "\0") !== false) {
+            return $this->json($response, ['error' => 'Invalid path.'], 400);
+        }
+
+        $markdown = $this->getPage($path);
+        if ($markdown === '') {
+            return $this->json($response, ['error' => 'Page not found or empty.'], 404);
+        }
+
+        $response = $response->withHeader('Cache-Control', 'public, max-age=3600');
+        return $this->json($response, [
+            'path'     => $path,
+            'markdown' => $markdown,
+        ]);
     }
 
     public function reindex(Request $request, Response $response, $args): Response
@@ -286,6 +344,11 @@ class AskTheDocsController
             return 0;
         }
 
+        $nav = $this->filterPublishedAndUnrestricted($nav);
+        if (empty($nav)) {
+            return 0;
+        }
+
         $flat      = $navigation->flatten($nav, '', []);
         $summaries = $this->loadSummaries();
 
@@ -295,9 +358,6 @@ class AskTheDocsController
 
         foreach ($flat as $item) {
             if (($item->elementType ?? '') !== 'file') {
-                continue;
-            }
-            if (($item->status ?? '') !== 'published') {
                 continue;
             }
 
@@ -317,6 +377,135 @@ class AskTheDocsController
         $this->storeSummaries($summaries);
 
         return count($summaries) - 1; // subtract the 'built' key
+    }
+
+    // ─── Private: public API helpers ──────────────────────────────────────────
+
+    private function getPublicKeyHash(): string
+    {
+        $pkeyfile = getcwd() . DIRECTORY_SEPARATOR . 'settings' . DIRECTORY_SEPARATOR . 'public_key.pem';
+        if (!file_exists($pkeyfile) || !is_readable($pkeyfile)) {
+            return '';
+        }
+        $content = file_get_contents($pkeyfile);
+        if ($content === false) {
+            return '';
+        }
+        return md5($content);
+    }
+
+    private function checkPublicAuth(): bool
+    {
+        $expectedHash = $this->getPublicKeyHash();
+        $receivedHash = $_SERVER['HTTP_X_ASKTHEDOCS_AUTH'] ?? '';
+
+        // Basic validation: must be a 32-character hex string
+        if (!preg_match('/^[a-f0-9]{32}$/i', $receivedHash)) {
+            return false;
+        }
+
+        return $receivedHash === $expectedHash;
+    }
+
+    /**
+     * Filter draft navigation items: remove unpublished and restricted pages.
+     * Keeps hidden pages (they may still be documentation).
+     */
+    private function filterPublishedAndUnrestricted(array $items): array
+    {
+        $filtered = [];
+        foreach ($items as $item) {
+            if (!is_object($item)) {
+                continue;
+            }
+            // Remove unpublished pages
+            if (isset($item->status) && $item->status === 'unpublished') {
+                continue;
+            }
+            // Remove restricted pages (alloweduser or allowedrole set)
+            if (
+                (isset($item->alloweduser) && !empty($item->alloweduser))
+                || (isset($item->allowedrole) && !empty($item->allowedrole))
+            ) {
+                continue;
+            }
+
+            // Recursively filter folder children
+            if (
+                isset($item->elementType)
+                && $item->elementType === 'folder'
+                && !empty($item->folderContent)
+            ) {
+                $item->folderContent = $this->filterPublishedAndUnrestricted($item->folderContent);
+            }
+
+            $filtered[] = $item;
+        }
+        return $filtered;
+    }
+
+    private function buildPublicIndex(): array
+    {
+        $urlinfo  = $this->c->get('urlinfo');
+        $langattr = $this->settings['langattr'] ?? false;
+
+        $navigation = new Navigation();
+        $nav = $navigation->getFullDraftNavigation($urlinfo, $langattr);
+
+        if (!$nav) {
+            return ['navigation' => [], 'pages' => [], 'built' => null];
+        }
+
+        $nav = $this->filterPublishedAndUnrestricted($nav);
+
+        $summaries = $this->loadSummaries();
+        $built = $summaries['built'] ?? null;
+        unset($summaries['built']);
+
+        $pages = [];
+        $tree = $this->buildIndexTree($nav, $summaries, $pages, $urlinfo, $langattr);
+
+        return [
+            'navigation' => $tree,
+            'pages'      => $pages,
+            'built'      => $built,
+        ];
+    }
+
+    private function buildIndexTree(array $items, array $summaries, array &$pages, array $urlinfo, $langattr): array
+    {
+        $navigation = new Navigation();
+        $result = [];
+
+        foreach ($items as $item) {
+            $path = $item->urlRelWoF ?? '';
+            $node = [
+                'type'    => $item->elementType ?? 'file',
+                'title'   => $item->name ?? '',
+                'summary' => $summaries[$path]['summary'] ?? '',
+                'path'    => $path,
+            ];
+
+            if ($node['type'] === 'folder') {
+                $childItem = $navigation->getItemForUrl($path, $urlinfo, $langattr);
+                if ($childItem) {
+                    $children = $childItem->folderContent ?? [];
+                    $children = $this->filterPublishedAndUnrestricted($children);
+                    if (!empty($children)) {
+                        $node['children'] = $this->buildIndexTree($children, $summaries, $pages, $urlinfo, $langattr);
+                    }
+                }
+            } else {
+                $pages[$path] = [
+                    'title'   => $node['title'],
+                    'summary' => $node['summary'],
+                ];
+            }
+
+            $result[] = $node;
+        }
+
+        return $result;
     }
 
     // ─── Private: agent loop ──────────────────────────────────────────────────
@@ -368,7 +557,7 @@ class AskTheDocsController
         $log   = [];
         $log[] = '# Ask the Docs — Session Log';
         $log[] = '';
-        $log[] = '**Date:** ' . date('Y-m-d H:i:s');
+        $log[] = '**Date:** ' . date('Y-m-d H');
         $log[] = '**AI adapter:** ' . $adapterName . ' / ' . $modelName;
         $log[] = '**Max steps:** ' . $maxSteps . ' | **Max pages:** ' . $maxPages;
         $log[] = '';
@@ -765,6 +954,7 @@ class AskTheDocsController
         }
 
         $children = $item->folderContent ?? [];
+        $children = $this->filterPublishedAndUnrestricted($children);
         $result   = [];
 
         foreach ($children as $child) {

@@ -76,6 +76,17 @@ The plugin counts visitors by their network address, so clearing cookies or usin
 
 - **Auto-reindex on content changes** — when on, the plugin rebuilds its search index every time you publish or delete a page. This makes sure the AI always works with current content.
 
+### Public API (for other Typemill instances)
+
+Two read-only endpoints allow remote Typemill installations to query your documentation tree and page content — useful for help systems like Kixote.
+
+- **Enable Public Index Endpoint** — exposes `/api/v1/askthedocs/index`, which returns the full navigation tree with page summaries
+- **Enable Public Page Endpoint** — exposes `/api/v1/askthedocs/page`, which returns the raw Markdown of a single page
+
+Both endpoints are **disabled by default**. When enabled, they require a simple header authentication: the requesting client must send `X-AskTheDocs-Auth: <md5_hash_of_public_key.pem>`, where `public_key.pem` is the same file found in every Typemill `/settings` folder. This prevents casual crawlers without adding complex key management.
+
+**Important:** The public index endpoint only serves an existing summary index. It will never generate or rebuild summaries automatically. Make sure you have built the index in the admin dashboard before enabling this feature.
+
 ## Admin dashboard
 
 Go to **System → Ask the Docs** to open the dashboard.
@@ -140,3 +151,8 @@ If the chatbot does not appear, check that:
 4. The documentation index has been built at least once (visit the Ask the Docs admin page and click **Rebuild & Generate**)
 
 If answers seem off-topic, tighten the **Additional Agent Instructions** or lower the step and page limits so the AI focuses more narrowly.
+
+### Public API issues
+
+- **Remote instance gets 403** — make sure the Public Index / Public Page checkbox is enabled in the plugin settings and that the remote instance sends the correct `X-AskTheDocs-Auth` header.
+- **Remote instance gets 404 from `/index`** — the public endpoint only serves an existing index. Click **Rebuild & Generate** in the admin dashboard first.
